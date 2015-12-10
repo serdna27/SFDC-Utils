@@ -1,0 +1,33 @@
+/******
+Author:Andres k Tejada
+Description: Test class for DateHelper class
+*******/
+@isTest
+public class DateHelper_Test {
+
+    public static testMethod void test_getMonthBusinessDays(){
+        List<Date> listDate=DateHelper.getMonthBusinessDays(1);
+        listDate.addAll(DateHelper.getMonthBusinessDays(2));
+        listDate.addAll(DateHelper.getMonthBusinessDays(5));
+        listDate.addAll(DateHelper.getMonthBusinessDays(9));
+        listDate.addAll(DateHelper.getMonthBusinessDays(10));
+        
+        system.assert(listDate.size()>0,'error getting the business days for month');
+    }
+    
+    public static testMethod void test_getBusinessDate(){
+        Date dateMatch=DateHelper.getBusinessDate(1,7);
+        system.assert(dateMatch!=null,'error found at getting the business days');
+    }
+    
+    public static testMethod void test_getBusinessDateOverload(){
+        Datetime dateMatch=DateHelper.getBusinessDate(datetime.now(),7);
+        system.assert(dateMatch!=null,'error found at getting the business days');
+    }
+    
+    public static testMethod void test_getBusinessDateNumber(){
+        Date aDate=Date.newInstance(Date.today().year(), Date.today().month(), 2);
+        integer dateNumber=DateHelper.getBusinessDateNumber(aDate);
+        system.assert(dateNumber>0,'error found at getting the number business days, can\'t be zero.');
+    }
+}
