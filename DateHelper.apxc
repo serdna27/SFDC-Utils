@@ -1,0 +1,246 @@
+/******
+Author:Andres k Tejada
+Date:2014-12-10
+Description: Helper class used for Date manipulation
+*******/
+public class DateHelper {
+
+    public static Set<String> holidays;//{'01-01','07-04','11-11','12-25'}; 
+    
+    private static void initHolidays(integer year,integer month){
+            
+        	List<String> strHolidays=system.label.usa_holydays.split(',');
+        	holidays=new Set<String>(strHolidays);
+        	//jan holidays
+            if(month==1){
+                Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
+                holidays.add(mapDates.get(3).format('MM-dd'));//3erd monday => martin luther king day
+            }
+        	//feb holidays
+            if(month==2){
+                Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
+                holidays.add(mapDates.get(3).format('MM-dd'));//3erd monday => president's day
+            }
+        	//may holidays
+            if(month==5){
+                Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
+                integer lastMon=mapDates.size();
+                holidays.add(mapDates.get(lastMon).format('MM-dd'));//last monday => memorial day
+            }
+        	//sept holidays
+            if(month==9){
+                Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
+                holidays.add(mapDates.get(1).format('MM-dd'));//first monday => labor day
+            }
+        	//oct holidays
+            if(month==10){
+                Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
+                holidays.add(mapDates.get(2).format('MM-dd'));//second monday => columbus day
+            }
+        	//nov holidays
+            if(month==11){
+                Map<integer,DateTime> mapDates=geDatesByDayName('thu',month,year);
+                holidays.add(mapDates.get(4).format('MM-dd'));//four thursday => thanksgiving day
+            }
+        	
+    }
+    
+    private static List<Date> calculateBusinessDays(integer month,integer year){
+        
+        List<Date> bDays=new List<Date>();
+        
+        if(month>12 || month<=0)
+            return bDays;
+        
+        initHolidays(year,month);//init the holidays for the current month and year
+		//system.debug('holidays==>'+holiDays);
+        integer monthDays=Date.daysInMonth(year, month);
+        integer dayCount=1;
+        integer novCountThu=0;
+        while(dayCount<=monthDays){
+            
+            date monthDate=Date.newInstance(year, month, dayCount);
+            DateTime monthDateTime=DateTime.newInstance(year, month, dayCount);
+            
+            if(isDateWeekend(monthDate)==false && isDateHoliday(monthDate)==false)
+                bDays.add(monthDate);
+            
+            dayCount++;
+        }
+        
+        return bDays;
+    }
+   
+    //get the month business days by month of current year
+    public static List<Date> getMonthBusinessDays(integer month){
+        
+        return calculateBusinessDays(month,Date.today().year());
+    }
+	
+    
+    //get the count of week days by name of the day for a year and month
+    public static Map<integer,DateTime> geDatesByDayName(string dayName,integer month,integer year ){
+          	
+        	Map<integer,DateTime> mapDates=new Map<integer,DateTime>();
+        	Set<string> weekDays=new Set<string>{'sun','mon','tue','wed','thu','fri','sun'};
+        	
+            integer monthDays=Date.daysInMonth(year, month);
+            integer dayCount=1;
+            integer interval=0;
+        
+        	if(weekDays.contains(dayName)==false)	
+                return mapDates;
+        
+            while(dayCount<=monthDays){
+                
+                DateTime monthDateTime=DateTime.newInstance(year, month, dayCount);
+                
+                if(monthDateTime.format('E').toLowerCase()==dayName){
+                    interval++;
+                    mapDates.put(interval,monthDateTime);    
+                }
+                
+                dayCount++;
+            }
+        
+        return mapDates;
+    }
+   
+	//get the business date by date number    
+    public static Date getBusinessDate(integer month,integer dayNumber){
+        List<Date> bDays=getMonthBusinessDays(month);
+        
+        if(bDays.size()>0 &&(dayNumber>0 && dayNumber<=bDays.size())){
+            return bDays.get(dayNumber-1);
+        }
+        return null;
+    }
+    
+    public static Datetime getBusinessDate(Datetime dateTimeVal, Integer days) {
+        
+        Datetime result = dateTimeVal;
+        Integer count = 0; 
+        initHolidays(result.year(),result.month());
+        
+        while (Count <= days) {
+         
+            date monthDate = Date.newInstance(result.year(), result.month(), result.day());
+            if(isDateWeekend(monthDate)==false && isDateHoliday(monthDate)==false){
+                count++;
+            }
+            
+            result = result.addDays(1);
+        }
+        
+        return result;
+    }
+    
+    //get the business day number given a current date.
+    public static integer getBusinessDateNumber(Date currentDate){
+        List<Date> bDays=calculateBusinessDays(currentDate.month(),currentDate.year());
+        
+        integer bDayCount=1;
+        while(bDayCount<=bDays.size()){
+            if(bDays.get(bdayCount-1)==currentDate)
+                return bDayCount;
+            
+            bDayCount++;
+        }
+        //the date is not a business date
+        return 0;
+    }
+    
+    //validate if the day is a weekend date
+    public static boolean isDateWeekend(Date currentDate){
+        
+        DateTime currentDateTime=DateTime.newInstance(currentDate.year(), currentDate.month(), currentDate.day());
+
+        //system.debug('date weekend==>'+currentDateTime);
+        String dayOfWeek=currentDateTime.format('E').toLowerCase();
+        //system.debug('day of week====>'+dayOfWeek);
+        return dayOfWeek=='sun' || dayOfWeek=='sat';
+        
+    }
+    
+    public static boolean IsSaturday(Date currentDate){
+         DateTime currentDateTime=DateTime.newInstance(currentDate.year(), currentDate.month(), currentDate.day());
+
+        //system.debug('date weekend==>'+currentDateTime);
+        String dayOfWeek=currentDateTime.format('E').toLowerCase();
+        //system.debug('day of week====>'+dayOfWeek);
+        return dayOfWeek=='sat';
+    }
+    
+    public static boolean IsSunday(Date currentDate){
+         DateTime currentDateTime=DateTime.newInstance(currentDate.year(), currentDate.month(), currentDate.day());
+
+        //system.debug('date weekend==>'+currentDateTime);
+        String dayOfWeek=currentDateTime.format('E').toLowerCase();
+        //system.debug('day of week====>'+dayOfWeek);
+        return dayOfWeek=='sun';
+    }
+    
+    public static Date getNextDayByName(date currentDate, string nextDayOfWeek){
+        DateTime currentDateTime=DateTime.newInstance(currentDate.year(), currentDate.month(), currentDate.day());
+        Date dateFound = null;
+        for(integer i=1;i<=7; i++){
+            
+            if(currentDateTime.format('E').toLowerCase() == nextDayOfWeek.substring(0,3)){
+               
+              dateFound = Date.newInstance(currentDateTime.year(), currentDateTime.month(), currentDateTime.day());
+                break;
+            }
+            
+			currentDateTime = currentDateTime.addDays(1);            
+        }
+        
+        
+        //system.debug('day of week====>'+dayOfWeek);
+        return dateFound;
+    }
+    
+    
+    
+     public static Date getNextEndOfMonthWithoutWeekend(date currentDate){
+         Date cDate=date.newinstance(currentDate.year(), currentDate.month() + 1, 1).addDays(-1);
+        Date dateFound = null;
+        for(integer i=1;i< 5; i++){
+            if(!isDateWeekend(cDate)){                 
+              dateFound = Date.newInstance(cDate.year(), cDate.month(), cDate.day());
+               break;
+            }            
+			cDate = cDate.addDays(-1);            
+        }
+         
+        system.debug('end of the month====>'+dateFound);
+        return dateFound;
+    }
+    
+    
+    
+     public static Date getNextStartOfMonthWithoutWeekend(date currentDate){
+         Date cDate=date.newinstance(currentDate.year(), currentDate.month(), 1);
+         system.debug('cdate start of month lets see '+cdate );
+        Date dateFound = null;
+        for(integer i=1;i< 5; i++){
+            if(!isDateWeekend(cDate)){                 
+              dateFound = Date.newInstance(cDate.year(), cDate.month(), cDate.day());
+               break;
+            }            
+			cDate = cDate.addDays(1);            
+        }
+         
+        system.debug('start of the month====>'+dateFound);
+        return dateFound;
+    }
+    
+    //validate if the day is a holiday date
+    public static boolean isDateHoliday(Date currentDate){
+        
+        DateTime currentDateTime=DateTime.newInstance(currentDate.year(), currentDate.month(), currentDate.day());
+        String monthDay=currentDateTime.format('MM-dd').toLowerCase();
+        //system.debug('Month-Day====>'+monthDay);
+        return holidays.contains(monthDay);
+    }
+    
+}
