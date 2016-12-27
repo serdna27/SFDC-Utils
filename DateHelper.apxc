@@ -238,9 +238,7 @@ public class DateHelper {
         //system.debug('day of week====>'+dayOfWeek);
         return dateFound;
     }
-    
-    
-    
+
      public static Date getNextEndOfMonthWithoutWeekend(date currentDate){
          Date cDate=date.newinstance(currentDate.year(), currentDate.month() + 1, 1).addDays(-1);
         Date dateFound = null;
@@ -255,9 +253,7 @@ public class DateHelper {
         system.debug('end of the month====>'+dateFound);
         return dateFound;
     }
-    
-    
-    
+
      public static Date getNextStartOfMonthWithoutWeekend(date currentDate){
          Date cDate=date.newinstance(currentDate.year(), currentDate.month(), 1);
          system.debug('cdate start of month lets see '+cdate );
@@ -287,6 +283,36 @@ public class DateHelper {
     public static Set<String> getHolidays(integer year){
         initHolidays(year,0);
         return holidays;
+    }
+
+    public static integer getBusinessDaysQty(date startDate,date dueDate){
+
+        Integer numberDaysDue = startDate.daysBetween(dueDate);
+
+         List<Date> bDays=new List<Date>();
+        
+        initHolidays(startDate.year(),startDate.month());//init the holidays for the current month and year
+        initHolidays(dueDate.year(),dueDate.month());
+
+        integer dayCount=1;
+        while(dayCount<=numberDaysDue){
+
+            date monthDate=startDate;
+
+            if(dayCount>1){
+                monthDate=startDate.addDays(1);
+               
+            }
+          
+            if(isDateWeekend(monthDate)==false && isDateHoliday(monthDate)==false)
+                bDays.add(monthDate);
+            
+            dayCount++;
+        }
+        
+        return bDays.size();
+
+
     }
     
 }
