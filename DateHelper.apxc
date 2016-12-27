@@ -5,40 +5,80 @@ Description: Helper class used for Date manipulation
 *******/
 public class DateHelper {
 
-    public static Set<String> holidays;//{'01-01','07-04','11-11','12-25'}; 
-    
+    private static Set<String> holidays=new Set<String>();
+    public static string defaultHolidays='01-01,07-04,11-11,12-25';
     private static void initHolidays(integer year,integer month){
+         
+        list<string> listDefaultHolidays=new list<string>(defaultHolidays.split(','));
+        
+        
+        for(string day:listDefaultHolidays){
+            string dateFormatted=year+'-'+day+' 12:00:000';
+            dateTime dt=dateTime.valueOfGMT (dateFormatted);
             
-        	List<String> strHolidays=system.label.usa_holydays.split(',');
-        	holidays=new Set<String>(strHolidays);
+            //check if the holiday is on sunday
+            if(dt.format('E')=='Sun'){
+                system.debug(dt);
+                //add next day as a holiday
+                holidays.add(dt.addDays(1).format('MM-dd'));
+            }
+            else{
+                holidays.add(day);
+            }
+            
+        }
+        if(month==0){
+            
+            Map<integer,DateTime> mapDates=geDatesByDayName('mon',1,year);
+             holidays.add(mapDates.get(3).format('MM-dd'));//3erd monday => martin luther king day
+            
+			mapDates=geDatesByDayName('mon',2,year);
+            holidays.add(mapDates.get(3).format('MM-dd'));//3erd monday => president's day
+            
+               mapDates=geDatesByDayName('mon',5,year);
+                integer lastMon=mapDates.size();
+                holidays.add(mapDates.get(lastMon).format('MM-dd'));//last monday => memorial day
+             
+            mapDates=geDatesByDayName('mon',9,year);
+                holidays.add(mapDates.get(1).format('MM-dd'));//first monday => labor day
+            
+             mapDates=geDatesByDayName('mon',10,year);
+                holidays.add(mapDates.get(2).format('MM-dd'));//second monday => columbus day
+            
+             mapDates=geDatesByDayName('thu',11,year);
+                holidays.add(mapDates.get(4).format('MM-dd'));//four thursday => thanksgiving day
+        }
+                  
+        system.debug('default holidays==>'+holidays);
         	//jan holidays
             if(month==1){
+               
                 Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
                 holidays.add(mapDates.get(3).format('MM-dd'));//3erd monday => martin luther king day
             }
         	//feb holidays
-            if(month==2){
+            if(month==2 ){
                 Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
                 holidays.add(mapDates.get(3).format('MM-dd'));//3erd monday => president's day
             }
         	//may holidays
-            if(month==5){
+            if(month==5 ){
                 Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
                 integer lastMon=mapDates.size();
                 holidays.add(mapDates.get(lastMon).format('MM-dd'));//last monday => memorial day
             }
         	//sept holidays
-            if(month==9){
+            if(month==9 ){
                 Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
                 holidays.add(mapDates.get(1).format('MM-dd'));//first monday => labor day
             }
         	//oct holidays
-            if(month==10){
+            if(month==10 ){
                 Map<integer,DateTime> mapDates=geDatesByDayName('mon',month,year);
                 holidays.add(mapDates.get(2).format('MM-dd'));//second monday => columbus day
             }
         	//nov holidays
-            if(month==11){
+            if(month==11 ){
                 Map<integer,DateTime> mapDates=geDatesByDayName('thu',month,year);
                 holidays.add(mapDates.get(4).format('MM-dd'));//four thursday => thanksgiving day
             }
@@ -241,6 +281,12 @@ public class DateHelper {
         String monthDay=currentDateTime.format('MM-dd').toLowerCase();
         //system.debug('Month-Day====>'+monthDay);
         return holidays.contains(monthDay);
+    }
+    
+    
+    public static Set<String> getHolidays(integer year){
+        initHolidays(year,0);
+        return holidays;
     }
     
 }
