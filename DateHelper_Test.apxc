@@ -30,4 +30,18 @@ public class DateHelper_Test {
         integer dateNumber=DateHelper.getBusinessDateNumber(aDate);
         system.assert(dateNumber>0,'error found at getting the number business days, can\'t be zero.');
     }
+    
+    public static testMethod void test_showHolidays(){
+        DateHelper.getHolidays(system.today().year());
+    }
+    
+    public static testMethod void test_getBusinessDaysQty(){
+        Date startDate = Date.newInstance(2016, 12, 23);
+        Date dueDate = Date.newInstance(2016, 12, 27);
+        Integer numberDaysDue = startDate.daysBetween(dueDate);
+        system.debug(numberDaysDue);
+        system.debug(DateHelper.getBusinessDaysQty(startDate,dueDate));
+    }
+    
+    
 }
